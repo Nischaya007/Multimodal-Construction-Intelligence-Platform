@@ -103,16 +103,35 @@ class GeminiClient:
             raise LLMError("Gemini returned an empty response.")
         return text
 
-    # ---------------------------------------------------------------- public API
+    def get_available_models(self) -> list[str]:
+        """Fetch models dynamically supported for generateContent by the provided API key."""
+        if not self.enabled:
+            return list(self.models)
+        try:
+            resp = self.session.get(f"{GEMINI_BASE_URL}/models?pageSize=100", headers=self._headers(), timeout=10)
+            if resp.status_code == 200:
+                data = resp.json().get("models", [])
+                supported = [
+                    m["name"].replace("models/", "")
+                    for m in data
+                    if "generateContent" in m.get("supportedGenerationMethods", [])
+                ]
+                if supported:
+                    return supported
+        except Exception:
+            pass
+        return list(self.models)
+
     def validate_key(self) -> tuple[bool, str]:
         if not self.enabled:
             return False, "No key entered."
         try:
-            resp = self.session.get(f"{GEMINI_BASE_URL}/models?pageSize=1", headers=self._headers(), timeout=15)
+            resp = self.session.get(f"{GEMINI_BASE_URL}/models?pageSize=10", headers=self._headers(), timeout=15)
         except requests.RequestException as exc:
             return False, f"Network error: {exc}"
         if resp.status_code == 200:
-            return True, "API key verified."
+            models = self.get_available_models()
+            return True, f"API key verified. Available models: {', '.join(models[:4])}"
         return False, self._error_message(resp)
 
     def generate_json(self, prompt: str, image_bytes: bytes | None = None, mime_type: str = "image/jpeg",

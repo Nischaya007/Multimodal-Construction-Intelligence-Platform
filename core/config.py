@@ -7,7 +7,13 @@ APP_NAME = "Multimodal Construction Intelligence Platform"
 APP_VERSION = "1.0.0"
 
 # ---------------------------------------------------------------- LLM settings
-GEMINI_MODELS = ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash")
+GEMINI_MODELS = (
+    "gemini-2.0-flash",
+    "gemini-2.5-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-pro",
+)
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 REQUEST_TIMEOUT_S = 90
 

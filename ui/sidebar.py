@@ -1,4 +1,4 @@
-﻿"""Sidebar: secure API-key input, mode indicator, architecture overview and feature navigation."""
+"""Sidebar: secure API-key input, mode indicator, architecture overview and feature navigation."""
 from __future__ import annotations
 
 import streamlit as st
@@ -42,8 +42,10 @@ def render_sidebar() -> GeminiClient:
                                 placeholder="Paste key for live multimodal AI",
                                 help="Stored only in this browser session memory. Leave empty to run in demonstration mode.")
         key = resolve_api_key(entered) or _secret_key()
-        model = st.selectbox("Preferred model", GEMINI_MODELS, index=0, help="Others are used as automatic fallbacks.")
-        ordered = (model, *[m for m in GEMINI_MODELS if m != model])
+        temp_client = GeminiClient(key)
+        available_models = tuple(temp_client.get_available_models()) if key else GEMINI_MODELS
+        model = st.selectbox("Preferred model", available_models, index=0, help="Others are used as automatic fallbacks.")
+        ordered = (model, *[m for m in available_models if m != model])
         client = GeminiClient(key, models=ordered)
 
         mode = "gemini" if client.enabled else "demo"
